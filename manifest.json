@@ -8,6 +8,10 @@
   "orientation": "portrait-primary",
   "background_color": "#F4F5F2",
   "theme_color": "#101C36",
-  "icons": []
+  "icons": [
+    { "src": "portal-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "portal-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "portal-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "portal-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
 }
-
