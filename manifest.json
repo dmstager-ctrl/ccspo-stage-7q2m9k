@@ -1,1 +1,13 @@
+{
+  "name": "Crestmark Client Portal (Staging)",
+  "short_name": "Crestmark Portal",
+  "description": "Temporary staging build — Crestmark Construction Services portal.",
+  "start_url": "index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#F4F5F2",
+  "theme_color": "#101C36",
+  "icons": []
+}
 
