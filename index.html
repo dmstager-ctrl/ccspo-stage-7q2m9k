@@ -32,11 +32,16 @@
     <div class="err" id="err"></div>
   </div>
   <script>
+    // Preserves where the person was actually trying to go (e.g. the PO Tool icon
+    // bouncing here with ?next=po_tool) instead of always dropping to the dashboard.
     function tryUnlock(){
       const v = document.getElementById('pw').value;
       if(v === 'Crestmark2026'){
         sessionStorage.setItem('cx_unlocked','1');
-        location.href = 'crestmark-client-portal.html';
+        const next = new URLSearchParams(location.search).get('next');
+        location.href = next === 'po_tool'
+          ? 'crestmark-client-portal.html?view=po_tool'
+          : 'crestmark-client-portal.html';
       } else {
         document.getElementById('err').textContent = 'Incorrect code.';
       }
