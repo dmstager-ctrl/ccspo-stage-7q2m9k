@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>Crestmark Portal - Staging</title>
+<style>
+  html,body{margin:0;height:100%;background:#101C36;font-family:-apple-system,BlinkMacSystemFont,sans-serif;display:flex;align-items:center;justify-content:center;}
+  .box{background:#fff;border-radius:12px;padding:32px 28px;max-width:320px;width:90%;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.3);}
+  h1{font-size:18px;color:#101C36;margin:0 0 6px;}
+  p{font-size:13px;color:#666;margin:0 0 18px;}
+  input{width:100%;box-sizing:border-box;padding:12px;font-size:16px;border:1px solid #ccc;border-radius:8px;margin-bottom:12px;}
+  button{width:100%;padding:12px;font-size:15px;font-weight:600;background:#2b6fd6;color:#fff;border:none;border-radius:8px;}
+  .err{color:#c0392b;font-size:12px;min-height:16px;margin-top:4px;}
+</style>
+</head>
+<body>
+  <div class="box">
+    <h1>Crestmark Staging</h1>
+    <p>This is a temporary staging link. Enter the access code to continue.</p>
+    <input type="password" id="pw" placeholder="Access code" autocomplete="off">
+    <button onclick="tryUnlock()">Continue</button>
+    <div class="err" id="err"></div>
+  </div>
+  <script>
+    function tryUnlock(){
+      const v = document.getElementById('pw').value;
+      if(v === 'Crestmark2026'){
+        sessionStorage.setItem('cx_unlocked','1');
+        location.href = 'crestmark-client-portal.html';
+      } else {
+        document.getElementById('err').textContent = 'Incorrect code.';
+      }
+    }
+    document.getElementById('pw').addEventListener('keydown', e => { if(e.key==='Enter') tryUnlock(); });
+  </script>
+</body>
+</html>
