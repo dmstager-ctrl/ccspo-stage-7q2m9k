@@ -1,1 +1,13 @@
+{
+  "name": "Crestmark PO Tool (Staging)",
+  "short_name": "PO Tool",
+  "description": "Temporary staging build — Crestmark PM PO Tool.",
+  "start_url": "po-tool.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#F4F5F2",
+  "theme_color": "#101C36",
+  "icons": []
+}
 
