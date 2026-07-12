@@ -23,10 +23,15 @@
 <body>
   <div class="wrap"><div class="spinner"></div><p>Loading&hellip;</p></div>
   <script>
+    // Standalone home-screen apps on iOS get their own storage context, separate from
+    // Safari and from other installed icons — so this can't assume cx_unlocked carries
+    // over from the Portal icon. If not unlocked here, bounce to the gate but carry the
+    // intended destination along via ?next=po_tool so the gate redirects back to THIS
+    // screen after unlock, instead of dropping to the default dashboard.
     if(sessionStorage.getItem('cx_unlocked') === '1'){
       location.replace('crestmark-client-portal.html?view=po_tool');
     } else {
-      location.replace('index.html');
+      location.replace('index.html?next=po_tool');
     }
   </script>
 </body>
