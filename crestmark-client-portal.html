@@ -5,13 +5,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Crestmark Client Portal</title>
 <!-- PWA / iOS "Add to Home Screen" support -->
-<link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#101C36">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Crestmark Portal">
-<link rel="apple-touch-icon" href="portal-icon-192.png">
-<link rel="icon" href="portal-icon-192.png">
+<script>
+  // The PO Tool is reached via ?view=po_tool on this same file (see po-tool.html's
+  // redirect). iOS reads whichever icon/manifest tags are present on the page at the
+  // moment "Add to Home Screen" is tapped -- so these are written dynamically based on
+  // the URL, ensuring adding from the PO Tool screen picks up the PO-badged icon/name
+  // instead of the general Portal one.
+  (function(){
+    var isPO = new URLSearchParams(location.search).get('view') === 'po_tool';
+    document.write('<link rel="manifest" href="' + (isPO ? 'po-tool-manifest.json' : 'manifest.json') + '">');
+    document.write('<meta name="apple-mobile-web-app-title" content="' + (isPO ? 'PO Tool' : 'Crestmark Portal') + '">');
+    document.write('<link rel="apple-touch-icon" href="' + (isPO ? 'po-tool-icon-192.png' : 'portal-icon-192.png') + '">');
+    document.write('<link rel="icon" href="' + (isPO ? 'po-tool-icon-192.png' : 'portal-icon-192.png') + '">');
+  })();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&family=Dancing+Script:wght@600;700&family=Great+Vibes&display=swap" rel="stylesheet">
