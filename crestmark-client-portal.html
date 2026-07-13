@@ -1674,14 +1674,18 @@ function render(){
   // After every render, if this is a PO-Tool-locked session, hide any element whose
   // onclick would navigate to a non-whitelisted view -- covers breadcrumbs, quick-nav
   // tiles, "Home" links, etc. generically without depending on their specific markup.
+  // Deferred via setTimeout so this runs AFTER render() finishes rebuilding the DOM below,
+  // not before -- otherwise the rebuild immediately overwrites the hidden state.
   if (new URLSearchParams(location.search).get('view') === 'po_tool') {
-    document.querySelectorAll('[onclick]').forEach(function(el){
-      var oc = el.getAttribute('onclick') || '';
-      var m = oc.match(/go\(['"]([a-zA-Z_]+)['"]/);
-      if (m && ['po_tool','po_tool_done'].indexOf(m[1]) === -1) {
-        el.style.display = 'none';
-      }
-    });
+    setTimeout(function(){
+      document.querySelectorAll('[onclick]').forEach(function(el){
+        var oc = el.getAttribute('onclick') || '';
+        var m = oc.match(/go\(['"]([a-zA-Z_]+)['"]/);
+        if (m && ['po_tool','po_tool_done'].indexOf(m[1]) === -1) {
+          el.style.display = 'none';
+        }
+      });
+    }, 0);
   } renderCrumb(); refreshBellBadge(); const v=document.getElementById('view');
   if(ROUTE.view==='home') v.innerHTML=viewHome();
   else if(ROUTE.view==='property') v.innerHTML=viewProperty(ROUTE.pid);
