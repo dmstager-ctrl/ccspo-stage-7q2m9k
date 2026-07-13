@@ -1660,8 +1660,29 @@ const IS_STAFF = ()=> SESSION && CRESTMARK_STAFF_ROLES.includes(SESSION.role);
 const CAN_PRICE_CLIENT = ()=> SESSION && (SESSION.role==='internal_admin' || SESSION.role==='coo');
 
 /* ============ ROUTER ============ */
-function go(view,params={}){ if(view==='job' && (!ROUTE||ROUTE.jid!==params.jid)) JOB_TAB='board'; ROUTE={view,...params}; window.scrollTo(0,0); render(); }
-function render(){ renderCrumb(); refreshBellBadge(); const v=document.getElementById('view');
+function go(view,params={
+  // PO Tool kiosk lock: this session was launched via the dedicated PO Tool entry point
+  // (po-tool.html redirects here with ?view=po_tool, and internal go() calls never touch
+  // the URL, so this flag stays reliable for the whole session). While locked, block any
+  // navigation attempt to a view other than the PO Tool itself or its confirmation screen --
+  // this is what stops someone opening the PO Tool app from clicking through to the rest
+  // of the portal.
+  if (new URLSearchParams(location.search).get('view') === 'po_tool' && !['po_tool','po_tool_done'].includes(view)) {
+    return;
+  }}){ if(view==='job' && (!ROUTE||ROUTE.jid!==params.jid)) JOB_TAB='board'; ROUTE={view,...params}; window.scrollTo(0,0); render(); }
+function render(){
+  // After every render, if this is a PO-Tool-locked session, hide any element whose
+  // onclick would navigate to a non-whitelisted view -- covers breadcrumbs, quick-nav
+  // tiles, "Home" links, etc. generically without depending on their specific markup.
+  if (new URLSearchParams(location.search).get('view') === 'po_tool') {
+    document.querySelectorAll('[onclick]').forEach(function(el){
+      var oc = el.getAttribute('onclick') || '';
+      var m = oc.match(/go\(['"]([a-zA-Z_]+)['"]/);
+      if (m && ['po_tool','po_tool_done'].indexOf(m[1]) === -1) {
+        el.style.display = 'none';
+      }
+    });
+  } renderCrumb(); refreshBellBadge(); const v=document.getElementById('view');
   if(ROUTE.view==='home') v.innerHTML=viewHome();
   else if(ROUTE.view==='property') v.innerHTML=viewProperty(ROUTE.pid);
   else if(ROUTE.view==='job') v.innerHTML=viewJob(ROUTE.jid);
