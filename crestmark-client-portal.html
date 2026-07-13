@@ -1670,23 +1670,7 @@ function go(view,params={}){
   if (new URLSearchParams(location.search).get('view') === 'po_tool' && !['po_tool','po_tool_done'].includes(view)) {
     return;
   } if(view==='job' && (!ROUTE||ROUTE.jid!==params.jid)) JOB_TAB='board'; ROUTE={view,...params}; window.scrollTo(0,0); render(); }
-function render(){
-  // After every render, if this is a PO-Tool-locked session, hide any element whose
-  // onclick would navigate to a non-whitelisted view -- covers breadcrumbs, quick-nav
-  // tiles, "Home" links, etc. generically without depending on their specific markup.
-  // Deferred via setTimeout so this runs AFTER render() finishes rebuilding the DOM below,
-  // not before -- otherwise the rebuild immediately overwrites the hidden state.
-  if (new URLSearchParams(location.search).get('view') === 'po_tool') {
-    setTimeout(function(){
-      document.querySelectorAll('[onclick]').forEach(function(el){
-        var oc = el.getAttribute('onclick') || '';
-        var m = oc.match(/go\(['"]([a-zA-Z_]+)['"]/);
-        if (m && ['po_tool','po_tool_done'].indexOf(m[1]) === -1) {
-          el.style.display = 'none';
-        }
-      });
-    }, 0);
-  } renderCrumb(); refreshBellBadge(); const v=document.getElementById('view');
+function render(){ renderCrumb(); refreshBellBadge(); const v=document.getElementById('view');
   if(ROUTE.view==='home') v.innerHTML=viewHome();
   else if(ROUTE.view==='property') v.innerHTML=viewProperty(ROUTE.pid);
   else if(ROUTE.view==='job') v.innerHTML=viewJob(ROUTE.jid);
@@ -6595,6 +6579,24 @@ function denySubApp(appId){
 if(!tryRestoreSession()) renderDemoList();
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
+}
+
+/* PO Tool kiosk lock (nav hiding): a MutationObserver instead of hooking render() directly --
+   render() can fire multiple times in a chain (e.g. during login/session hydration), and a
+   single deferred hide was losing that race. Reacting to actual DOM mutations is robust
+   regardless of how many times or when render() runs. */
+if (new URLSearchParams(location.search).get('view') === 'po_tool') {
+  var hidePOToolNav = function(){
+    document.querySelectorAll('[onclick]').forEach(function(el){
+      var oc = el.getAttribute('onclick') || '';
+      var m = oc.match(/go\(['"]([a-zA-Z_]+)['"]/);
+      if (m && ['po_tool','po_tool_done'].indexOf(m[1]) === -1 && el.style.display !== 'none') {
+        el.style.display = 'none';
+      }
+    });
+  };
+  new MutationObserver(hidePOToolNav).observe(document.body, {childList:true, subtree:true});
+  hidePOToolNav();
 }
 </script>
 </body>
