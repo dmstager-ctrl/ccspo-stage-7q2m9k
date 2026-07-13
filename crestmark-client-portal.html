@@ -1660,7 +1660,7 @@ const IS_STAFF = ()=> SESSION && CRESTMARK_STAFF_ROLES.includes(SESSION.role);
 const CAN_PRICE_CLIENT = ()=> SESSION && (SESSION.role==='internal_admin' || SESSION.role==='coo');
 
 /* ============ ROUTER ============ */
-function go(view,params={
+function go(view,params={}){
   // PO Tool kiosk lock: this session was launched via the dedicated PO Tool entry point
   // (po-tool.html redirects here with ?view=po_tool, and internal go() calls never touch
   // the URL, so this flag stays reliable for the whole session). While locked, block any
@@ -1669,7 +1669,7 @@ function go(view,params={
   // of the portal.
   if (new URLSearchParams(location.search).get('view') === 'po_tool' && !['po_tool','po_tool_done'].includes(view)) {
     return;
-  }}){ if(view==='job' && (!ROUTE||ROUTE.jid!==params.jid)) JOB_TAB='board'; ROUTE={view,...params}; window.scrollTo(0,0); render(); }
+  } if(view==='job' && (!ROUTE||ROUTE.jid!==params.jid)) JOB_TAB='board'; ROUTE={view,...params}; window.scrollTo(0,0); render(); }
 function render(){
   // After every render, if this is a PO-Tool-locked session, hide any element whose
   // onclick would navigate to a non-whitelisted view -- covers breadcrumbs, quick-nav
@@ -1874,7 +1874,14 @@ function viewPOTool(){
     </div>
     <div class="mfg"><label>Vendor Name</label><select id="pot_vendor"><option value="">\u2014 select vendor \u2014</option>${vendorOpts}</select></div>
     <div class="mfg"><label>Customer Job Number</label><select id="pot_job" onchange="updatePOToolSubs()"><option value="">\u2014 select job \u2014</option>${jobOpts}</select></div>
-    <div class="mfg"><label>$ Amount</label><input type="number" id="pot_amt" placeholder="0"></div>
+    <div class="mfg"><label>$ Amount</label><input type="number" id="pot_amt" placeholder="0"></div><div class="mfg"><label>Item</label>
+      <input value="Supplies &amp; Materials" disabled style="background:var(--paper)">
+      <div class="hint" style="font-size:12px;color:var(--muted);margin-top:4px">Chart of accounts code — fixed for all PO Tool purchases.</div>
+    </div>
+    <div class="mfg"><label>Item Description</label>
+      <textarea id="pot_item_desc" rows="2" placeholder="Describe what's being purchased..." style="width:100%;box-sizing:border-box;padding:10px;font-family:inherit;font-size:14px;border:1px solid #ccc;border-radius:8px;resize:vertical"></textarea>
+    </div>
+    
     <div class="mfg"><label>PM</label>${pmField}</div>
     <div class="mfg"><label>Subcontractor <span style="font-weight:400;color:var(--muted)">(optional)</span></label><select id="pot_sub" disabled><option value="">\u2014 select a job first \u2014</option></select>
       <div class="hint" style="font-size:12px;color:var(--muted);margin-top:4px">Only subs actually assigned/awarded on that job show up here \u2014 including whoever won the bid \u2014 plus Delivery if no one's picking up.</div>
@@ -1914,7 +1921,7 @@ function submitPOTool(){
   const isDelivery = subSel==='__delivery__';
   const po={ id:'po_'+Date.now(), po_number:poNumber, job_id:jobId, property_id:p?p.id:null,
     vendor_id:vendorId, sub_id:(subSel&&!isDelivery)?subSel:null, pickup:isDelivery?'delivery':(subSel?'pickup':''),
-    description:'', amount_authorized:amt, amount_invoiced:0,
+    description: mval('pot_item_desc'), item: 'Supplies & Materials', amount_authorized:amt, amount_invoiced:0,
     status:'open', created_by:pmName, created_at:new Date().toISOString().slice(0,10), qb_sync:'pending' };
   (DB.purchase_orders=DB.purchase_orders||[]).push(po);
   syncPOToQuickBooks(po);
@@ -1939,6 +1946,8 @@ function syncPOToQuickBooks(po){
     CustomerRef_JobNumber: j?j.qb:null,
     CustomerRef_JobName: j?j.name:null,
     TotalAmt: po.amount_authorized,
+    Item: po.item,
+    ItemDescription: po.description,
     PM: po.created_by,
     PickupBy: sub?sub.name:(po.pickup==='delivery'?'Delivery — no pickup':null),
     TxnDate: po.created_at
@@ -1962,6 +1971,8 @@ function viewPOToolDone(poId){
       <div class="to"><b>Job</b>${j?esc(j.qb||'')+' \u2014 '+esc(j.name):'\u2014'}${p?' ('+esc(p.name)+')':''}</div>
       <div class="to"><b>Amount</b>${money(po.amount_authorized)}</div>
       <div class="to"><b>PM</b>${esc(po.created_by)}</div>
+      <div class="to"><b>Item</b>${esc(qb.Item || po.item || 'Supplies &amp; Materials')}</div>
+      ${po.description ? `<div class="to"><b>Item Description</b>${esc(po.description)}</div>` : ''}
       ${sub?`<div class="to"><b>Pickup</b>${esc(sub.name)}</div>`:(po.pickup==='delivery'?`<div class="to"><b>Pickup</b>\ud83d\ude9a Delivery (no pickup)</div>`:'')}
       <div class="to"><b>QuickBooks</b>${po.qb_sync==='synced'?'\u2705 Synced '+dt(po.qb_synced_at):'\u23f3 Pending sync'}</div>
     </div>
