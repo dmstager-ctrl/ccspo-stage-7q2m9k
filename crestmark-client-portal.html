@@ -1660,16 +1660,7 @@ const IS_STAFF = ()=> SESSION && CRESTMARK_STAFF_ROLES.includes(SESSION.role);
 const CAN_PRICE_CLIENT = ()=> SESSION && (SESSION.role==='internal_admin' || SESSION.role==='coo');
 
 /* ============ ROUTER ============ */
-function go(view,params={}){
-  // PO Tool kiosk lock: this session was launched via the dedicated PO Tool entry point
-  // (po-tool.html redirects here with ?view=po_tool, and internal go() calls never touch
-  // the URL, so this flag stays reliable for the whole session). While locked, block any
-  // navigation attempt to a view other than the PO Tool itself or its confirmation screen --
-  // this is what stops someone opening the PO Tool app from clicking through to the rest
-  // of the portal.
-  if (new URLSearchParams(location.search).get('view') === 'po_tool' && !['po_tool','po_tool_done'].includes(view)) {
-    return;
-  } if(view==='job' && (!ROUTE||ROUTE.jid!==params.jid)) JOB_TAB='board'; ROUTE={view,...params}; window.scrollTo(0,0); render(); }
+function go(view,params={}){ if(view==='job' && (!ROUTE||ROUTE.jid!==params.jid)) JOB_TAB='board'; ROUTE={view,...params}; window.scrollTo(0,0); render(); }
 function render(){ renderCrumb(); refreshBellBadge(); const v=document.getElementById('view');
   if(ROUTE.view==='home') v.innerHTML=viewHome();
   else if(ROUTE.view==='property') v.innerHTML=viewProperty(ROUTE.pid);
@@ -6579,24 +6570,6 @@ function denySubApp(appId){
 if(!tryRestoreSession()) renderDemoList();
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
-}
-
-/* PO Tool kiosk lock (nav hiding): a MutationObserver instead of hooking render() directly --
-   render() can fire multiple times in a chain (e.g. during login/session hydration), and a
-   single deferred hide was losing that race. Reacting to actual DOM mutations is robust
-   regardless of how many times or when render() runs. */
-if (new URLSearchParams(location.search).get('view') === 'po_tool') {
-  var hidePOToolNav = function(){
-    document.querySelectorAll('[onclick]').forEach(function(el){
-      var oc = el.getAttribute('onclick') || '';
-      var m = oc.match(/go\(['"]([a-zA-Z_]+)['"]/);
-      if (m && ['po_tool','po_tool_done'].indexOf(m[1]) === -1 && el.style.display !== 'none') {
-        el.style.display = 'none';
-      }
-    });
-  };
-  new MutationObserver(hidePOToolNav).observe(document.body, {childList:true, subtree:true});
-  hidePOToolNav();
 }
 </script>
 </body>
